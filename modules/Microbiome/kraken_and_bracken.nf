@@ -104,13 +104,13 @@ process krakenresults {
 
 
     """
-    ${PYTHON3} \$HOME/.nextflow-bin/kraken2_long_to_wide_update.py -i ${kraken_reports} -o kraken_analytic_matrix.csv
+    ${PYTHON3} /opt/amrplusplus/bin/kraken2_long_to_wide_update.py -i ${kraken_reports} -o kraken_analytic_matrix.csv
     """
 }
 
 process runbracken {
     label "microbiome"
-    errorStrategy 'ignore'
+    errorStrategy { task.exitStatus == 1 ? 'ignore' : 'terminate' }
 
     input:
        tuple val(sample_id), path(kraken_report), val(level)

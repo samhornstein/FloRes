@@ -46,6 +46,7 @@ fi
 CONFIG_FILE="${SCRIPT_DIR}/config/${ENV}.env"
 if [[ ! -f "$CONFIG_FILE" ]]; then
     echo "Error: Configuration file not found: $CONFIG_FILE"
+    echo "Create it from the template: cp ${SCRIPT_DIR}/config/${ENV}.env.template ${CONFIG_FILE}"
     exit 1
 fi
 
