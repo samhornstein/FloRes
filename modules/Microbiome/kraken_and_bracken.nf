@@ -149,38 +149,3 @@ process brackenresults {
     ${PYTHON3} /opt/conda/bin/combine_bracken_outputs.py --files ${bracken_reports} -o bracken_analytic_matrix_${level}.csv
     """
 }
-
-process kronadb {
-    label "microbiome"
-    output:
-       file("krona_db/taxonomy.tab") optional true into krona_db_ch // is this a value ch?
-
-    when: 
-        !params.skip_krona
-        
-    script:
-    """
-    ktUpdateTaxonomy.sh krona_db
-    """
-}
-
-process kronafromkraken {
-    publishDir params.outdir, mode: 'copy'
-    label "microbiome"
-    input:
-        file(x) from kraken2krona_ch.collect()
-        //file(y) from kaiju2krona_ch.collect()
-        file("krona_db/taxonomy.tab") from krona_db_ch
-    
-    output:
-        file("*_taxonomy_krona.html")
-
-    when:
-        !params.skip_krona
-    
-    script:
-    """
-    mkdir krona
-    ktImportTaxonomy -o kraken2_taxonomy_krona.html -tax krona_db $x
-    """
-}
