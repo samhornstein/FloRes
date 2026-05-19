@@ -4,7 +4,7 @@ bam_files: null
 split: ""
 
 host: "gs://<GCS_REF_BUCKET>/grch38_1kgmaj.fa"
-host_index: "gs://<GCS_REF_BUCKET>/grch38_1kgmaj{.fa,*.bt2}"
+host_index: "gs://<GCS_BUCKET>/results/Alignment/Bowtie2_Index/grch38_1kgmaj{.fa,*.bt2}"
 kraken_db: "gs://<GCS_REF_BUCKET>/minikraken_8GB_20200312"
 amr_index: null
 amr: "gs://<GCS_BUCKET>/data/amr/megares_database_v3.fasta"

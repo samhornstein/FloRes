@@ -18,16 +18,17 @@ workflow FASTQ_RM_HOST_WF {
             bowtie2_index(hostfasta)
             reference_index_files = bowtie2_index.out
         } else {
-            reference_index_files = Channel
-               .fromPath(params.host_index)
-               .toList()
-               .map { files ->
-                   if (files.size() < 6) {
-                       error "Expected 6 host index files, found ${files.size()}. Please provide all 6 files, including the host fasta file. Remember to use * in your path."
-                   } else {
-                       files.sort()
-                   }
-               }
+            def cached = file(params.host_index)
+            def cached_files = cached instanceof List ? cached : [cached]
+            if (cached_files.size() >= 6 && cached_files.every { it.exists() }) {
+                reference_index_files = Channel
+                   .fromPath(params.host_index)
+                   .toList()
+                   .map { files -> files.sort() }
+            } else {
+                bowtie2_index(hostfasta)
+                reference_index_files = bowtie2_index.out
+            }
          }    
 
         bowtie2_rm_contaminant_fq(reference_index_files, read_pairs_ch )
