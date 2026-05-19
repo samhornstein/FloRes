@@ -62,19 +62,19 @@ if [[ "$ENV" == "local" ]]; then
     # Activate conda environment if available
     if command -v conda &> /dev/null; then
         eval "$(conda shell.bash hook)"
-        if conda env list | grep -q "AMR++_env"; then
-            conda activate AMR++_env
+        if conda env list | grep -q "AMRplusplus_env"; then
+            conda activate AMRplusplus_env
         else
-            echo "Warning: AMR++_env conda environment not found"
-            echo "Please create it with: conda env create -f envs/AMR++_env.yaml"
+            echo "Warning: AMRplusplus_env conda environment not found"
+            echo "Please create it with: conda env create -f envs/AMRplusplus_env.yaml"
             exit 1
         fi
     else
-        echo "Error: conda not found. Please install conda and create the AMR++_env environment"
+        echo "Error: conda not found. Please install conda and create the AMRplusplus_env environment"
         exit 1
     fi
 
-    nextflow run main_AMR++.nf -profile "${NEXTFLOW_PROFILE}"
+    nextflow run main_AMRplusplus.nf -profile "${NEXTFLOW_PROFILE}"
     exit 0
 fi
 
@@ -101,19 +101,19 @@ if [[ "$ENV" == "wb" ]]; then
         # Ensure conda is properly initialized for this shell
         eval "$(conda shell.bash hook)"
 
-        # Check if AMR++_env exists, create if it doesn't
-        if ! conda env list | grep -q "AMR++_env"; then
-            echo "Creating AMR++_env conda environment with Nextflow v24..."
+        # Check if AMRplusplus_env exists, create if it doesn't
+        if ! conda env list | grep -q "AMRplusplus_env"; then
+            echo "Creating AMRplusplus_env conda environment with Nextflow v24..."
             echo "This may take a few minutes..."
-            conda env create -f envs/AMR++_env.yaml
-            echo "AMR++_env environment created successfully"
+            conda env create -f envs/AMRplusplus_env.yaml
+            echo "AMRplusplus_env environment created successfully"
         else
-            echo "AMR++_env conda environment found"
+            echo "AMRplusplus_env conda environment found"
         fi
 
         # Activate the environment
-        echo "Activating AMR++_env conda environment..."
-        conda activate AMR++_env
+        echo "Activating AMRplusplus_env conda environment..."
+        conda activate AMRplusplus_env
 
         # Verify Nextflow version
         echo "Using Nextflow version: $(nextflow -version 2>&1 | grep -o 'version [0-9.]*' | head -1)"
@@ -125,10 +125,10 @@ else
     # For GCP environment, just try to activate if available
     if command -v conda &> /dev/null; then
         eval "$(conda shell.bash hook)"
-        if conda env list | grep -q "AMR++_env"; then
-            conda activate AMR++_env
+        if conda env list | grep -q "AMRplusplus_env"; then
+            conda activate AMRplusplus_env
         else
-            echo "Warning: AMR++_env conda environment not found, continuing without it"
+            echo "Warning: AMRplusplus_env conda environment not found, continuing without it"
         fi
     fi
 fi
@@ -144,4 +144,4 @@ elif [[ -n "${NEXTFLOW_CONFIG:-}" ]]; then
     NF_ARGS+=(-c "${NEXTFLOW_CONFIG}" --pipeline "standard_AMR_wKraken_and_Bracken")
 fi
 
-nextflow run main_AMR++.nf "${NF_ARGS[@]}" -with-trace "trace-${now}.txt"
+nextflow run main_AMRplusplus.nf "${NF_ARGS[@]}" -with-trace "trace-${now}.txt"
