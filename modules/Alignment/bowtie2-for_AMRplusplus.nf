@@ -127,7 +127,7 @@ process bowtie2_rm_contaminant_fq {
 }
 
 process HostRemovalStats {
-    tag { sample_id }
+    tag "HostRemovalStats"
     label "normal"
 
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'terminate' }
