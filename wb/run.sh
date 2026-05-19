@@ -81,7 +81,11 @@ fi
 # Handle GCP/Workbench environments
 echo "Running Nextflow on Google Batch..."
 echo "Profile: ${NEXTFLOW_PROFILE}"
-echo "Config: ${NEXTFLOW_CONFIG}"
+if [[ -n "${NEXTFLOW_PARAMS_FILE:-}" ]]; then
+    echo "Params file: ${NEXTFLOW_PARAMS_FILE}"
+elif [[ -n "${NEXTFLOW_CONFIG:-}" ]]; then
+    echo "Config: ${NEXTFLOW_CONFIG}"
+fi
 echo ""
 
 # Handle conda environment for Workbench
@@ -132,5 +136,12 @@ fi
 
 now=$(date +"%Y-%m-%d--%H-%M")
 
-# Run nextflow with Google Batch profile
-nextflow run main_AMR++.nf -profile "${NEXTFLOW_PROFILE}" -c "${NEXTFLOW_CONFIG}" --pipeline "standard_AMR_wKraken_and_Bracken" -with-trace "trace-${now}.txt"
+NF_ARGS=(-profile "${NEXTFLOW_PROFILE}")
+
+if [[ -n "${NEXTFLOW_PARAMS_FILE:-}" ]]; then
+    NF_ARGS+=(-params-file "${NEXTFLOW_PARAMS_FILE}")
+elif [[ -n "${NEXTFLOW_CONFIG:-}" ]]; then
+    NF_ARGS+=(-c "${NEXTFLOW_CONFIG}" --pipeline "standard_AMR_wKraken_and_Bracken")
+fi
+
+nextflow run main_AMR++.nf "${NF_ARGS[@]}" -with-trace "trace-${now}.txt"

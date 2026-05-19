@@ -57,6 +57,8 @@ fi
 
 source "$CONFIG_FILE"
 
+cd "${SCRIPT_DIR}/.."
+
 # Handle local environment (no push)
 if [[ "$ENV" == "local" ]]; then
     if [[ "$PUSH" == "true" ]]; then
