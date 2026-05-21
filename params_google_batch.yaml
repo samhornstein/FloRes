@@ -12,7 +12,7 @@ annotation: "gs://nf-vwb-dev-perky-potato-6012/data/amr/megares_annotations_v3.0
 
 output: "gs://nf-vwb-dev-perky-potato-6012/results"
 
-snp: "Y"
+snp: "N"
 deduped: "N"
 prefix: "AMR"
 threads: 8
