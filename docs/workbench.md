@@ -83,27 +83,64 @@ Results will be stored in your configured GCS bucket.
 
 ## Running from the Workbench UI
 
-Instead of running from the terminal, you can submit pipeline jobs directly from the Workbench web interface.
+Submit pipeline jobs directly from the Workbench web interface instead of the terminal.
 
-### Prerequisites
+### Step 1: Local Setup
 
-1. The params file must be uploaded to your GCS bucket:
-   ```bash
-   gsutil cp params_google_batch.yaml gs://<YOUR_BUCKET>/params_google_batch.yaml
-   ```
-2. The Docker container must be built and pushed to Artifact Registry (Step 2 above).
+Set your active Workbench workspace and configure the environment:
 
-### Adding the Workflow
+```bash
+wb workspace set --id=<your-workspace-id>
+cp wb/config/wb.env.template wb/config/wb.env
+```
 
-1. In your Workbench workspace, go to **Workflows** and add a new workflow from the git repository.
+Edit `wb/config/wb.env` and set:
+- `WB_BUCKET_RESOURCE_ID`: Workbench GCS bucket resource ID (e.g., `nf`)
+- `GOOGLE_ARTIFACT_REPO`: Artifact Registry repo name (e.g., `nf-containers`)
+
+### Step 2: Create Infrastructure
+
+```bash
+./wb/setup_infra_ui.sh
+```
+
+This creates the GCS bucket and Artifact Registry repository. All other infrastructure (APIs, VPC, NAT, service accounts, IAM) is managed by Workbench.
+
+### Step 3: Build and Push Container
+
+```bash
+./wb/build.sh --env wb --push
+```
+
+Docker must be running. This builds the pipeline container and pushes it to Artifact Registry.
+
+### Step 4: Upload Data and Params
+
+```bash
+./wb/upload_data.sh wb
+./wb/upload_params.sh
+```
+
+This uploads input data (reads, reference databases, adapters) and the pipeline parameters file to GCS.
+
+### Step 5: Update Hardcoded Config
+
+The `nextflow.config` workbench profile and `params_google_batch.yaml` contain workspace-specific values (project ID, bucket name, service account). Update these to match your workspace before committing:
+
+- `nextflow.config`: Update the `workbench` profile (container path, workDir, google.project, service account, network/subnetwork)
+- `params_google_batch.yaml`: Update all `gs://` paths to your bucket
+
+### Step 6: Add Workflow in Workbench UI
+
+1. Go to **Workflows** in your workspace and add a new workflow from the git repository.
 2. Set the main script to `main_AMRplusplus.nf`.
 3. The display name must **not** contain `+` characters (Workbench rejects them).
 
-### Creating a Job
+### Step 7: Create and Run a Job
 
 1. Create a new job from the workflow.
 2. Set the **profile** to `workbench`.
-3. Select `params_google_batch.yaml` as the **parameters file** (the UI looks for YAML/JSON files in your GCS bucket).
+3. Select `params_google_batch.yaml` as the **parameters file** (the UI lists YAML/JSON files from your GCS bucket).
 
 ### Known Limitations
 
