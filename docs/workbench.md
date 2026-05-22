@@ -81,6 +81,38 @@ Results will be stored in your configured GCS bucket.
 
 ---
 
+## Running from the Workbench UI
+
+Instead of running from the terminal, you can submit pipeline jobs directly from the Workbench web interface.
+
+### Prerequisites
+
+1. The params file must be uploaded to your GCS bucket:
+   ```bash
+   gsutil cp params_google_batch.yaml gs://<YOUR_BUCKET>/params_google_batch.yaml
+   ```
+2. The Docker container must be built and pushed to Artifact Registry (Step 2 above).
+
+### Adding the Workflow
+
+1. In your Workbench workspace, go to **Workflows** and add a new workflow from the git repository.
+2. Set the main script to `main_AMRplusplus.nf`.
+3. The display name must **not** contain `+` characters (Workbench rejects them).
+
+### Creating a Job
+
+1. Create a new job from the workflow.
+2. Set the **profile** to `workbench`.
+3. Select `params_google_batch.yaml` as the **parameters file** (the UI looks for YAML/JSON files in your GCS bucket).
+
+### Known Limitations
+
+- The Workbench UI orchestrator runs Nextflow v25, which is stricter than the v24 pinned in the Docker container (used by worker nodes only). Pipeline code must be compatible with both versions.
+- Filenames containing `+` characters cannot be streamed from git to GCS by the Workbench platform.
+- SNP verification (`snp: "Y"`) has a known upstream bug (sample name mismatch in `SNP_Verification.py`). Leave it disabled (`snp: "N"` in the params file) until fixed.
+
+---
+
 ## Alternative: Quick Demo in Workbench JupyterLab
 
 For a simple demonstration without Google Batch (both orchestration and execution running in the same Workbench app):
@@ -98,14 +130,14 @@ source ~/.bashrc
 cd repos/FloRes
 
 # Create and activate the conda environment
-conda env create -f envs/AMR++_env.yaml
-conda activate AMR++_env
+conda env create -f envs/AMRplusplus_env.yaml
+conda activate AMRplusplus_env
 
 # Verify Nextflow version 24 is installed
 nextflow -v
 
 # Run the test pipeline (takes ~5 minutes)
-nextflow run main_AMR++.nf
+nextflow run main_AMRplusplus.nf
 ```
 
 Expected output: results in `~/repos/FloRes/test_results`
