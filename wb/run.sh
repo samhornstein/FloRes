@@ -46,6 +46,7 @@ fi
 CONFIG_FILE="${SCRIPT_DIR}/config/${ENV}.env"
 if [[ ! -f "$CONFIG_FILE" ]]; then
     echo "Error: Configuration file not found: $CONFIG_FILE"
+    echo "Create it from the template: cp ${SCRIPT_DIR}/config/${ENV}.env.template ${CONFIG_FILE}"
     exit 1
 fi
 
@@ -61,26 +62,30 @@ if [[ "$ENV" == "local" ]]; then
     # Activate conda environment if available
     if command -v conda &> /dev/null; then
         eval "$(conda shell.bash hook)"
-        if conda env list | grep -q "AMR++_env"; then
-            conda activate AMR++_env
+        if conda env list | grep -q "AMRplusplus_env"; then
+            conda activate AMRplusplus_env
         else
-            echo "Warning: AMR++_env conda environment not found"
-            echo "Please create it with: conda env create -f envs/AMR++_env.yaml"
+            echo "Warning: AMRplusplus_env conda environment not found"
+            echo "Please create it with: conda env create -f envs/AMRplusplus_env.yaml"
             exit 1
         fi
     else
-        echo "Error: conda not found. Please install conda and create the AMR++_env environment"
+        echo "Error: conda not found. Please install conda and create the AMRplusplus_env environment"
         exit 1
     fi
 
-    nextflow run main_AMR++.nf -profile "${NEXTFLOW_PROFILE}"
+    nextflow run main_AMRplusplus.nf -profile "${NEXTFLOW_PROFILE}"
     exit 0
 fi
 
 # Handle GCP/Workbench environments
 echo "Running Nextflow on Google Batch..."
 echo "Profile: ${NEXTFLOW_PROFILE}"
-echo "Config: ${NEXTFLOW_CONFIG}"
+if [[ -n "${NEXTFLOW_PARAMS_FILE:-}" ]]; then
+    echo "Params file: ${NEXTFLOW_PARAMS_FILE}"
+elif [[ -n "${NEXTFLOW_CONFIG:-}" ]]; then
+    echo "Config: ${NEXTFLOW_CONFIG}"
+fi
 echo ""
 
 # Handle conda environment for Workbench
@@ -96,19 +101,19 @@ if [[ "$ENV" == "wb" ]]; then
         # Ensure conda is properly initialized for this shell
         eval "$(conda shell.bash hook)"
 
-        # Check if AMR++_env exists, create if it doesn't
-        if ! conda env list | grep -q "AMR++_env"; then
-            echo "Creating AMR++_env conda environment with Nextflow v24..."
+        # Check if AMRplusplus_env exists, create if it doesn't
+        if ! conda env list | grep -q "AMRplusplus_env"; then
+            echo "Creating AMRplusplus_env conda environment with Nextflow v24..."
             echo "This may take a few minutes..."
-            conda env create -f envs/AMR++_env.yaml
-            echo "AMR++_env environment created successfully"
+            conda env create -f envs/AMRplusplus_env.yaml
+            echo "AMRplusplus_env environment created successfully"
         else
-            echo "AMR++_env conda environment found"
+            echo "AMRplusplus_env conda environment found"
         fi
 
         # Activate the environment
-        echo "Activating AMR++_env conda environment..."
-        conda activate AMR++_env
+        echo "Activating AMRplusplus_env conda environment..."
+        conda activate AMRplusplus_env
 
         # Verify Nextflow version
         echo "Using Nextflow version: $(nextflow -version 2>&1 | grep -o 'version [0-9.]*' | head -1)"
@@ -120,10 +125,10 @@ else
     # For GCP environment, just try to activate if available
     if command -v conda &> /dev/null; then
         eval "$(conda shell.bash hook)"
-        if conda env list | grep -q "AMR++_env"; then
-            conda activate AMR++_env
+        if conda env list | grep -q "AMRplusplus_env"; then
+            conda activate AMRplusplus_env
         else
-            echo "Warning: AMR++_env conda environment not found, continuing without it"
+            echo "Warning: AMRplusplus_env conda environment not found, continuing without it"
         fi
     fi
 fi
@@ -131,6 +136,12 @@ fi
 
 now=$(date +"%Y-%m-%d--%H-%M")
 
-# Run nextflow with Google Batch profile
-#nextflow -c "${NEXTFLOW_CONFIG}" run main_AMR++.nf --pipeline "standard_AMR_wKraken_and_Bracken" -profile "${NEXTFLOW_PROFILE}" -with-trace "trace-${now}.txt"   -resume -bg
-nextflow run main_AMR++.nf --pipeline "standard_AMR_wKraken_and_Bracken" -with-trace "trace-${now}.txt"   
+NF_ARGS=(-profile "${NEXTFLOW_PROFILE}")
+
+if [[ -n "${NEXTFLOW_PARAMS_FILE:-}" ]]; then
+    NF_ARGS+=(-params-file "${NEXTFLOW_PARAMS_FILE}")
+elif [[ -n "${NEXTFLOW_CONFIG:-}" ]]; then
+    NF_ARGS+=(-c "${NEXTFLOW_CONFIG}" --pipeline "standard_AMR_wKraken_and_Bracken")
+fi
+
+nextflow run main_AMRplusplus.nf "${NF_ARGS[@]}" -with-trace "trace-${now}.txt"

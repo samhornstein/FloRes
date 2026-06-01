@@ -55,11 +55,11 @@ def helpMessage = """\
 params.pipeline = null
 
 // Load main pipeline workflows
-include { STANDARD_AMRplusplus } from './subworkflows/AMR++_standard.nf' 
-include { FAST_AMRplusplus } from './subworkflows/AMR++_fast.nf'
-include { STANDARD_AMRplusplus_wKraken } from './subworkflows/AMR++_standard_wKraken.nf'
-include { STANDARD_full_hifi } from './subworkflows/AMR++_full_hifi.nf'
-include { STANDARD_AMRplusplus_wKrak_and_Brack } from './subworkflows/AMR++_standard_wKrak_and_Brack.nf'
+include { STANDARD_AMRplusplus } from './subworkflows/AMRplusplus_standard.nf'
+include { FAST_AMRplusplus } from './subworkflows/AMRplusplus_fast.nf'
+include { STANDARD_AMRplusplus_wKraken } from './subworkflows/AMRplusplus_standard_wKraken.nf'
+include { STANDARD_full_hifi } from './subworkflows/AMRplusplus_full_hifi.nf'
+include { STANDARD_AMRplusplus_wKrak_and_Brack } from './subworkflows/AMRplusplus_standard_wKrak_and_Brack.nf'
 
 // Load subworkflows
 include { FASTQ_QC_WF } from './subworkflows/fastq_information.nf'

@@ -45,7 +45,6 @@ fi
 echo "Using project: ${GOOGLE_CLOUD_PROJECT}"
 
 echo "Configuration:"
-echo "  Bucket: gs://${GCS_BUCKET}"
 echo "  Service Account: ${GOOGLE_SERVICE_ACCOUNT_EMAIL}"
 echo "  Artifact Repository: ${GOOGLE_ARTIFACT_REPO}"
 echo ""
@@ -112,12 +111,16 @@ fi
 
 if [[ "$ENV" == "wb" ]]; then
     # For Workbench, use wb resource create
-    if wb resource describe --id="${GCS_BUCKET}" &>/dev/null; then
-        echo "Workbench GCS bucket resource already exists: ${GCS_BUCKET}"
+    WB_BUCKET_ID="${WB_BUCKET_RESOURCE_ID:-${GCS_BUCKET}}"
+    if wb resource describe --id="${WB_BUCKET_ID}" &>/dev/null; then
+        echo "Workbench GCS bucket resource already exists: ${WB_BUCKET_ID}"
     else
-        echo "Creating GCS bucket via Workbench: ${GCS_BUCKET}"
-        wb resource create gcs-bucket --id="${GCS_BUCKET}"
+        echo "Creating GCS bucket via Workbench: ${WB_BUCKET_ID}"
+        wb resource create gcs-bucket --id="${WB_BUCKET_ID}"
     fi
+    # Resolve the full bucket name from the resource
+    export GCS_BUCKET=$(wb resource describe --id="${WB_BUCKET_ID}" 2>/dev/null | grep "GCS bucket name" | awk -F': ' '{print $2}' | xargs)
+    echo "Resolved GCS bucket name: ${GCS_BUCKET}"
 else
     # For GCP, use gcloud storage
     if gcloud storage buckets describe "gs://${GCS_BUCKET}" --project="${GOOGLE_CLOUD_PROJECT}" &>/dev/null; then

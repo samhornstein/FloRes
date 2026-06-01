@@ -4,3 +4,6 @@ envs/amrplusplus-update.sif
 logs/
 .nextflow*
 nextflow-24.10.9-dist
+trace-*.txt
+wb/config/wb.env
+wb/config/gcp.env

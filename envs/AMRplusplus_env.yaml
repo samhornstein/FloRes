@@ -1,4 +1,4 @@
-name: AMR++_env
+name: AMRplusplus_env
 channels:
   - bioconda
   - conda-forge
