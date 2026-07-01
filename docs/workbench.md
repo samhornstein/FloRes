@@ -43,7 +43,7 @@ Then run:
 # Upload input data and reference databases to GCS
 ./wb/upload_data.sh wb
 
-# Build Docker image and push to Artifact Registry
+# Build Docker image and push to Artifact Registry (20-30 min, mostly conda)
 # NOTE: Docker must be running before executing this command
 ./wb/build.sh --env wb --push
 ```
@@ -104,40 +104,33 @@ This creates the GCS bucket and Artifact Registry repository. All other infrastr
 ./wb/build.sh --env wb --push
 ```
 
-Docker must be running. This builds the pipeline container and pushes it to Artifact Registry.
+Docker must be running. This builds the pipeline container and pushes it to Artifact Registry. Expect 20-30 minutes — the conda environment solve is slow.
 
-### Step 4: Upload Data and Params
+### Step 4: Upload Data and Pipeline
 
 ```bash
 ./wb/upload_data.sh wb
-./wb/upload_params.sh
+./wb/upload_pipeline.sh
 ```
 
-This uploads input data (reads, reference databases, adapters) and the pipeline parameters file to GCS.
+This uploads input data to the bucket and pipeline source code (with workspace-specific configuration automatically resolved from `wb.env`) to `gs://<bucket>/pipeline/`. These can run in parallel with the container build (Step 3).
 
-### Step 5: Update Hardcoded Config
+### Step 5: Add Workflow in Workbench UI
 
-The `nextflow.config` workbench profile and `params_google_batch.yaml` contain workspace-specific values (project ID, bucket name, service account). Update these to match your workspace before committing:
+1. Go to **Workflows** in your workspace and add a new workflow from the **workspace bucket**.
+2. Select your bucket and enter `pipeline/` as the prefix.
+3. Select `main_AMRplusplus.nf` as the workflow source.
+4. The display name must **not** contain `+` characters (Workbench rejects them).
 
-- `nextflow.config`: Update the `workbench` profile (container path, workDir, google.project, service account, network/subnetwork)
-- `params_google_batch.yaml`: Update all `gs://` paths to your bucket
-
-### Step 6: Add Workflow in Workbench UI
-
-1. Go to **Workflows** in your workspace and add a new workflow from the git repository.
-2. Set the main script to `main_AMRplusplus.nf`.
-3. The display name must **not** contain `+` characters (Workbench rejects them).
-
-### Step 7: Create and Run a Job
+### Step 6: Create and Run a Job
 
 1. Create a new job from the workflow.
 2. Set the **profile** to `workbench`.
-3. Select `params_google_batch.yaml` as the **parameters file** (the UI lists YAML/JSON files from your GCS bucket).
+3. Select `params_google_batch.yaml` as the **parameters file**.
 
 ### Known Limitations
 
 - The Workbench UI orchestrator runs Nextflow v25, which is stricter than the v24 pinned in the Docker container (used by worker nodes only). Pipeline code must be compatible with both versions.
-- Filenames containing `+` characters cannot be streamed from git to GCS by the Workbench platform.
 - SNP verification (`snp: "Y"`) has a known upstream bug (sample name mismatch in `SNP_Verification.py`). Leave it disabled (`snp: "N"` in the params file) until fixed.
 
 ---
@@ -174,6 +167,18 @@ Expected output: results in `~/repos/FloRes/test_results`
 ---
 
 ## Configuration
+
+### Reference Databases
+
+The repo bundles small test data (`data/host/chr21.fasta.gz`, MEGARes AMR databases, adapters) that are sufficient for demo runs. Production runs require additional reference databases uploaded to your GCS bucket:
+
+| Resource | Size | Needed for |
+|---|---|---|
+| Full host genome (e.g., GRCh38) | ~3 GB | Host read removal (`standard_AMR`, `rm_host`) |
+| Kraken2 database (e.g., minikraken 8GB) | ~8 GB | Microbiome classification (`*_wKraken*`, `kraken`) |
+| QIIME2 Greengenes classifier | ~1 GB | 16S analysis (`qiime2` pipeline only) |
+
+Upload these to your `GCS_REF_BUCKET` and update the paths in `params_google_batch.yaml`. The Kraken2 module will auto-download minikraken if no database is specified, but this does not work on Google Batch workers.
 
 ### Resource Scaling on Google Batch
 
