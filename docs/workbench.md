@@ -32,13 +32,7 @@ wb workspace set --id=your-workspace-id
 cp wb/config/wb.env.template wb/config/wb.env
 ```
 
-Edit `wb/config/wb.env` and set the user-defined variables:
-- `GCS_BUCKET`: Your Workbench GCS bucket resource ID (e.g., `nf-output`)
-- `GCS_REF_BUCKET`: Bucket containing reference genomes (e.g., `referencegenomes-wb-my-workspace-1234`)
-- `GCS_BUCKET_LOCATION`: Region (default: `us-central1`)
-- `GOOGLE_ARTIFACT_REPO`: Your artifact registry repo (e.g., `nextflow-containers`)
-
-**Note**: Project IDs, service accounts, and registry paths are automatically determined from your `gcloud` and `wb` CLI configurations.
+The template has sensible defaults (`nf-data` and `nf-containers`) — edit `wb/config/wb.env` only if you want different resource names. Project IDs, service accounts, and registry paths are automatically determined from your `gcloud` and `wb` CLI configurations.
 
 Then run:
 
@@ -94,9 +88,7 @@ wb workspace set --id=<your-workspace-id>
 cp wb/config/wb.env.template wb/config/wb.env
 ```
 
-Edit `wb/config/wb.env` and set:
-- `WB_BUCKET_RESOURCE_ID`: Workbench GCS bucket resource ID (e.g., `nf`)
-- `GOOGLE_ARTIFACT_REPO`: Artifact Registry repo name (e.g., `nf-containers`)
+The template has sensible defaults — edit `wb/config/wb.env` only if you want different resource names.
 
 ### Step 2: Create Infrastructure
 
